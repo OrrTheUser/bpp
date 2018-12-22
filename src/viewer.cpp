@@ -1477,6 +1477,43 @@ void Viewer::animate() {
         // new: bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_the_World
         dynamicsWorld->stepSimulation(_timeStep, _maxSubSteps, _fixedTimeStep);
 
+        //TODO: Delete
+        foreach (Object *obj1, *_objects) {
+            if ("Plane" != obj1->toString()) {
+                btVector3 oaabbmin1, oaabbmax1;
+                obj1->body->getAabb(oaabbmin1, oaabbmax1);
+                btScalar x_min_1 = oaabbmin1.getX();
+                btScalar y_min_1 = oaabbmin1.getY();
+                btScalar z_min_1 = oaabbmin1.getZ();
+                btScalar x_max_1 = oaabbmax1.getX();
+                btScalar y_max_1 = oaabbmax1.getY();
+                btScalar z_max_1 = oaabbmax1.getZ();
+                foreach (Object *obj2, *_objects) { 
+                    if ((obj1 != obj2) && ("Plane" != obj2->toString()) ) {
+                        btVector3 oaabbmin2, oaabbmax2;
+                        obj2->body->getAabb(oaabbmin2, oaabbmax2);
+                        btScalar x_min_2 = oaabbmin2.getX();
+                        btScalar y_min_2 = oaabbmin2.getY();
+                        btScalar z_min_2 = oaabbmin2.getZ();
+                        btScalar x_max_2 = oaabbmax2.getX();
+                        btScalar y_max_2 = oaabbmax2.getY();
+                        btScalar z_max_2 = oaabbmax2.getZ();
+                        
+                        if ((x_min_1 <= x_max_2 && x_max_1 >= x_min_2) &&
+                            (y_min_1 <= y_max_2 && y_max_1 >= y_min_2) &&
+                            (z_min_1 <= z_max_2 && z_max_1 >= z_min_2)) {
+                                printf("aabbMin=(%f,%f,%f)\n",oaabbmin1.getX(),oaabbmin1.getY(),oaabbmin1.getZ());
+                                printf("aabbMax=(%f,%f,%f)\n",oaabbmax1.getX(),oaabbmax1.getY(),oaabbmax1.getZ());
+                                printf("aabbMin=(%f,%f,%f)\n",oaabbmin2.getX(),oaabbmin2.getY(),oaabbmin2.getZ());
+                                printf("aabbMax=(%f,%f,%f)\n",oaabbmax2.getX(),oaabbmax2.getY(),oaabbmax2.getZ());
+                                obj1->setColor(0, 255, 0);
+                                obj2->setColor(0, 255, 0);
+                            }
+                    }
+                }
+            }
+        }
+
         if(_cb_postSim) {
             try {
                 luabind::call_function<void>(_cb_postSim, _frameNum);
