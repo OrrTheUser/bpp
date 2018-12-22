@@ -334,7 +334,7 @@ void Mesh::toPOV(QTextStream *s) const {
                     qDebug() << "unable to create " << incfile;
                 }
             } else {
-                // qDebug() << "mesh already exists " << incfile;
+                qDebug() << "mesh already exists " << incfile;
             }
 
             *s << "#include \"" + check_file.fileName() + "\"" << endl << endl;

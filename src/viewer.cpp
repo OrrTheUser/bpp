@@ -1437,6 +1437,39 @@ void Viewer::stopAnimation() {
     //  updateGL();
 }
 
+void color_object(Object *obj, int index) {
+    
+    switch (index % 8)
+    {
+        case 0:
+            obj->setColor(50, 50, 50);
+            break;
+        case 1:
+            obj->setColor(200, 50, 50);
+            break;
+        case 2:
+            obj->setColor(50, 200, 50);
+            break;
+        case 3:
+            obj->setColor(50, 50, 200);
+            break;
+        case 4:
+            obj->setColor(200, 200, 50);
+            break;
+        case 5:
+            obj->setColor(50, 200, 200);
+            break;
+        case 6:
+            obj->setColor(200, 50, 200);
+            break;
+        case 7:
+            obj->setColor(200, 200, 200);
+            break;
+        default:
+            break;
+    }
+}
+
 void Viewer::animate() {
     QMutexLocker locker(&mutex);
 
@@ -1478,7 +1511,13 @@ void Viewer::animate() {
         dynamicsWorld->stepSimulation(_timeStep, _maxSubSteps, _fixedTimeStep);
 
         //TODO: Delete
+        foreach (Object *obj, *_objects) {
+            color_object(obj, 0);
+        }
+        
+        int curr_object = 0;
         foreach (Object *obj1, *_objects) {
+            curr_object++;
             if ("Plane" != obj1->toString()) {
                 btVector3 oaabbmin1, oaabbmax1;
                 obj1->body->getAabb(oaabbmin1, oaabbmax1);
@@ -1502,12 +1541,8 @@ void Viewer::animate() {
                         if ((x_min_1 <= x_max_2 && x_max_1 >= x_min_2) &&
                             (y_min_1 <= y_max_2 && y_max_1 >= y_min_2) &&
                             (z_min_1 <= z_max_2 && z_max_1 >= z_min_2)) {
-                                printf("aabbMin=(%f,%f,%f)\n",oaabbmin1.getX(),oaabbmin1.getY(),oaabbmin1.getZ());
-                                printf("aabbMax=(%f,%f,%f)\n",oaabbmax1.getX(),oaabbmax1.getY(),oaabbmax1.getZ());
-                                printf("aabbMin=(%f,%f,%f)\n",oaabbmin2.getX(),oaabbmin2.getY(),oaabbmin2.getZ());
-                                printf("aabbMax=(%f,%f,%f)\n",oaabbmax2.getX(),oaabbmax2.getY(),oaabbmax2.getZ());
-                                obj1->setColor(0, 255, 0);
-                                obj2->setColor(0, 255, 0);
+                                color_object(obj1, curr_object);
+                                color_object(obj2, curr_object);
                             }
                     }
                 }
