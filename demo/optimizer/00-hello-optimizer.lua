@@ -61,7 +61,8 @@ v.optimizer:targetFunc(function()
   number_of_iterations = number_of_iterations + 1
   print("Sphere's x value: " .. s.pos.x)
   -- TODO: Why won't s.pos.length() work?
-  d = math.sqrt(s.pos.x^2 + s.pos.y^2 + s.pos.z^2)
-  print(d)
+  d = s.pos:length()
+  d2 = math.sqrt(s.pos.x^2 + s.pos.y^2 + s.pos.z^2)
+  print("a", d, "b", d2)
   return math.floor(d)
 end)
