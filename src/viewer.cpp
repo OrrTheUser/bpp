@@ -1490,6 +1490,9 @@ void Viewer::animate() {
         // new: bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_the_World
         dynamicsWorld->stepSimulation(_timeStep, _maxSubSteps, _fixedTimeStep);
 
+        // TODO: Delete this and move target function calling somewhere better
+        _opt->callTargetFunc();
+
         if(_cb_postSim) {
             try {
                 luabind::call_function<void>(_cb_postSim, _frameNum);

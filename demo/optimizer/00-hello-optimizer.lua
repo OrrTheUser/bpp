@@ -55,3 +55,13 @@ v:postSim(function(N) print(N)
     end
   end
 end)
+
+number_of_iterations = 0
+v.optimizer:targetFunc(function()
+  number_of_iterations = number_of_iterations + 1
+  print("Sphere's x value: " .. s.pos.x)
+  -- TODO: Why won't s.pos.length() work?
+  d = math.sqrt(s.pos.x^2 + s.pos.y^2 + s.pos.z^2)
+  print(d)
+  return math.floor(d)
+end)
