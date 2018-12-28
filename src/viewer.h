@@ -19,6 +19,7 @@
 #include <QTextStream>
 
 #include "objects/cam.h"
+#include "objects/optimizer.h"
 
 #include "objects/sphere.h"
 
@@ -61,6 +62,8 @@ public:
     void removeObject(Object* o);
     void setCamera(Cam* cam);
     Cam* getCamera();
+    void setOptimizer(Optimizer* opt);
+    Optimizer* getOptimizer();
 
     static void luaBind(lua_State *s);
     void luaBindInstance(lua_State *s);
@@ -213,6 +216,7 @@ private:
     QString lua_error;
 
     Cam *_cam;
+    Optimizer *_opt;
     Vec _initialCameraPosition;
     Quaternion _initialCameraOrientation;
 

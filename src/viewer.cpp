@@ -91,6 +91,8 @@ void Viewer::luaBind(lua_State *s) {
             .def(constructor<>())
             .def("setCam", (void(Viewer::*)(Cam *))&Viewer::setCamera, adopt(_2))
             .def("getCam", &Viewer::getCamera)
+            .def("setOptimizer", (void(Viewer::*)(Optimizer *))&Viewer::setOptimizer, adopt(_2))
+            .def("getOptimizer", &Viewer::getOptimizer)
             .def("add", (void(Viewer::*)(Object *))&Viewer::addObject, adopt(_2))
             .def("remove", (void(Viewer::*)(Object *))&Viewer::removeObject, adopt(result))
             .def("addConstraint", (void(Viewer::*)(btTypedConstraint *))&Viewer::addConstraint, adopt(_2))
@@ -114,6 +116,7 @@ void Viewer::luaBind(lua_State *s) {
             .property("pov", &Viewer::toPOV)
 
             .property("cam", &Viewer::getCamera, &Viewer::setCamera)
+            .property("optimizer", &Viewer::getOptimizer, &Viewer::setOptimizer)
 
             .property("gravity", &Viewer::getGravity, &Viewer::setGravity)
 
@@ -445,6 +448,7 @@ Viewer::Viewer(QWidget *parent, QSettings *settings, bool savePOV) : QGLViewer(p
     loadPrefs();
 
     setCamera(new Cam(this));
+    setOptimizer(new Optimizer());
 
     // POV-Ray properties
     mPreSDL = "";
@@ -466,6 +470,14 @@ void Viewer::setCamera(Cam *cam) {
 
 Cam* Viewer::getCamera() {
     return _cam;
+}
+
+void Viewer::setOptimizer(Optimizer *opt) {
+    _opt = opt;
+}
+
+Optimizer* Viewer::getOptimizer() {
+    return _opt;
 }
 
 void Viewer::setSavePOV(bool pov) {
@@ -655,6 +667,7 @@ bool Viewer::parse(QString txt) {
         Palette::luaBind(L);
         Plane::luaBind(L);
         Sphere::luaBind(L);
+        Optimizer::luaBind(L);
         Viewer::luaBind(L);
 
 #ifdef HAS_LUA_QT

@@ -241,6 +241,7 @@ SOURCES += src/main.cpp \
            src/objects/plane.cpp \
            src/objects/cylinder.cpp \
            src/objects/mesh.cpp \
+           src/objects/optimizer.cpp \
            src/objects/cam.cpp \
            src/wrapper/lua_bullet.cpp \
            src/gui.cpp \
@@ -260,6 +261,7 @@ HEADERS += src/viewer.h \
            src/objects/plane.h \
            src/objects/cylinder.h \
            src/objects/mesh.h \
+           src/objects/optimizer.h \
            src/objects/cam.h \
            src/wrapper/lua_bullet.h \
            src/wrapper/lua_converters.h \
