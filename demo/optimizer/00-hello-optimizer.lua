@@ -12,28 +12,30 @@
 
 require "module/povray"
 
-p = Plane(0,1,0,0,10)
-p.pos = btVector3(0,-0.5,0)
-p.col = "#777"
-p.restitution = 1
-p.sdl = [[
-  texture {
-    pigment{ color White }
-    finish { ambient 0.45 diffuse 0.85 }
-  }
-  rotate<0,0,0>
-  no_shadow
-]]
-v:add(p) --print(p.pov)
-
-s = Sphere(1,1)
-s.pos = btVector3(0,10,0)
-
---Optimizer value here:
-s.vel = btVector3(v.optimizer.value,0,0)
-s.col = "red"
-s.restitution = 0.925
-v:add(s) --print(s.pov)
+function set_scene()
+  p = Plane(0,1,0,0,10)
+  p.pos = btVector3(0,-0.5,0)
+  p.col = "#777"
+  p.restitution = 1
+  p.sdl = [[
+    texture {
+      pigment{ color White }
+      finish { ambient 0.45 diffuse 0.85 }
+    }
+    rotate<0,0,0>
+    no_shadow
+  ]]
+  v:add(p) --print(p.pov)
+  
+  s = Sphere(1,1)
+  s.pos = btVector3(0,10,0)
+  
+  --Optimizer value here:
+  s.vel = btVector3(v.optimizer.value,0,0)
+  s.col = "red"
+  s.restitution = 0.925
+  v:add(s) --print(s.pov)
+end
 
 function setcam()
   v.cam:setUpVector(btVector3(0,1,0), false)
@@ -66,3 +68,4 @@ v.optimizer:targetFunc(function()
   print("a", d, "b", d2)
   return math.floor(d)
 end)
+v.optimizer:optimize(set_scene)
