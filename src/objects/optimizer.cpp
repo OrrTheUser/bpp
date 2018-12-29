@@ -19,13 +19,20 @@ void Optimizer::luaBind(lua_State *s) {
             [
             class_<Optimizer>("Optimizer")
             .def(constructor<>())
+	    .def("optimize", &Optimizer::optimize)
             .def("targetFunc", (void(Optimizer::*)(const luabind::object &fn))&Optimizer::setTargetFunc, adopt(luabind::result))
             .property("value", &Optimizer::getValue)
             ];
 }
 
+void Optimizer::optimize(const luabind::object &fn) {
+    for (int i=1; i < 10; i++) {
+	luabind::call_function<void>(fn);
+    }
+}
+
 int Optimizer::getValue() {
-    return 5;
+    return optimization_value;
 }
 
 void Optimizer::setTargetFunc(const luabind::object &fn) {
