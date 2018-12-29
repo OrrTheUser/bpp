@@ -21,6 +21,59 @@ QString withoutExtension(const QString & fileName) {
     return fileName.left(fileName.lastIndexOf("."));
 }
 
+/*
+This Function runs the simulation of the scene.
+The first 4 arguments are system things we just pass along.
+The other two are ours:
+    optimization_value - the current value the optimizer is trying out.
+    optimized - whether this is the final optimized value or not (for rendering)
+*/
+Viewer* run_simulation(
+    QSettings* settings,
+    const QCommandLineParser& parser,
+    const QString& txt,
+    const QStringList& lua,
+    int optimization_value,
+    bool optimized
+) {
+    Viewer *v = new Viewer(NULL, settings);
+
+    QObject::connect(v, &Viewer::scriptHasOutput, [=](QString o) {
+	qStdOut() << o << endl;
+    });
+    QObject::connect(v, &Viewer::statusEvent, [=](QString e) {
+	qStdErr() << e << endl;
+    });
+
+    if (parser.isSet("verbose"))  {
+	QObject::connect(v, &Viewer::scriptStarts, [=]() {
+	    qStdErr() << "scriptStarts()" << endl;
+	});
+	QObject::connect(v, &Viewer::scriptStopped, [=]() {
+	    qStdErr() << "scriptStoppend()" << endl;
+	});
+	QObject::connect(v, &Viewer::scriptFinished, [=]() {
+	    qStdErr() << "scriptFinished()" << endl;
+	});
+    }
+
+    if (!lua.isEmpty()) {
+	v->setScriptName(withoutExtension(lua[0]));
+    } else {
+	v->setScriptName("stdin");
+    }
+
+    v->setSavePOV(parser.isSet("export"));
+
+    v->getOptimizer()->setValue(optimization_value);
+    if (optimized) {
+	v->getOptimizer()->setIsOptimized(true);
+    }
+    v->parse(txt);
+    v->startSim();
+    return v;
+}
+
 int main(int argc, char **argv) {
     QSharedPointer<QCoreApplication> app;
 
@@ -140,39 +193,7 @@ int main(int argc, char **argv) {
         maybe parse a command line argument "optimize" and only run this part when it's on, etc.
         */
        for(int i = 0; i < 30; i++) {
-            Viewer *v = new Viewer(NULL, settings);
-
-            QObject::connect(v, &Viewer::scriptHasOutput, [=](QString o) {
-                qStdOut() << o << endl;
-            });
-            QObject::connect(v, &Viewer::statusEvent, [=](QString e) {
-                qStdErr() << e << endl;
-            });
-
-            if (parser.isSet("verbose"))  {
-                QObject::connect(v, &Viewer::scriptStarts, [=]() {
-                    qStdErr() << "scriptStarts()" << endl;
-                });
-                QObject::connect(v, &Viewer::scriptStopped, [=]() {
-                    qStdErr() << "scriptStoppend()" << endl;
-                });
-                QObject::connect(v, &Viewer::scriptFinished, [=]() {
-                    qStdErr() << "scriptFinished()" << endl;
-                });
-            }
-
-            if (!lua.isEmpty()) {
-                v->setScriptName(withoutExtension(lua[0]));
-            } else {
-                v->setScriptName("stdin");
-            }
-
-            v->setSavePOV(parser.isSet("export"));
-
-            v->getOptimizer()->setValue(i);
-            v->parse(txt);
-            v->startSim();
-
+	    Viewer* v = run_simulation(settings, parser, txt, lua, i, false);
             // Currently setting the iteration number to be the guessed value
             // TODO: I think this implementation only works when we optimize speed/forces, not positions / size / etc.
 
@@ -200,40 +221,7 @@ int main(int argc, char **argv) {
        printf("The final target func value we got was %.6f, and we achieved it with the value %d\n", best_target_func_value, best_optimized_value);
 
         // Run the simulation again, for rendering the successful value
-        Viewer *v = new Viewer(NULL, settings);
-
-        QObject::connect(v, &Viewer::scriptHasOutput, [=](QString o) {
-            qStdOut() << o << endl;
-        });
-        QObject::connect(v, &Viewer::statusEvent, [=](QString e) {
-            qStdErr() << e << endl;
-        });
-
-        if (parser.isSet("verbose"))  {
-            QObject::connect(v, &Viewer::scriptStarts, [=]() {
-                qStdErr() << "scriptStarts()" << endl;
-            });
-            QObject::connect(v, &Viewer::scriptStopped, [=]() {
-                qStdErr() << "scriptStoppend()" << endl;
-            });
-            QObject::connect(v, &Viewer::scriptFinished, [=]() {
-                qStdErr() << "scriptFinished()" << endl;
-            });
-        }
-
-        if (!lua.isEmpty()) {
-            v->setScriptName(withoutExtension(lua[0]));
-        } else {
-            v->setScriptName("stdin");
-        }
-
-        v->setSavePOV(parser.isSet("export"));
-
-        v->getOptimizer()->setValue(best_optimized_value);
-        v->getOptimizer()->setIsOptimized(true);
-        v->parse(txt);
-        v->startSim();
-
+	Viewer* v = run_simulation(settings, parser, txt, lua, best_optimized_value, true);
         for (int j = 0; j < n; ++j) {
             v->animate();
         }
