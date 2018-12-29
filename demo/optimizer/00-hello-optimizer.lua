@@ -36,7 +36,7 @@ s.restitution = 0.925
 v:add(s) --print(s.pov)
 
 t = Sphere(1,1)
-t.pos = btVector3(2,0.5,-10)
+t.pos = btVector3(2,0.5,0)
 
 --Optimizer value here:
 t.col = "blue"
@@ -58,7 +58,7 @@ r = 0
 v:postSim(function(N)
   setcam()
   if (render) then
-    if (N % 3 == 0) then
+    if (N % 1 == 0) then
 	  if (v.optimizer.is_optimized) then
 	    povray.render("-d +L/usr/share/bpp/includes +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
 	    r = r + 1
@@ -72,6 +72,6 @@ v.optimizer:targetFunc(function()
   print(s.pos)
   print(t.pos)
   d = s.pos:distance(t.pos)
-  return math.floor(d)
+  return d
 end)
 

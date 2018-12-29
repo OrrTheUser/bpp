@@ -1,6 +1,6 @@
 #include "optimizer.h"
 
-#include <limits.h>
+#include <math.h>
 #include <luabind/adopt_policy.hpp>
 
 Optimizer::Optimizer() : QObject() {
@@ -48,10 +48,10 @@ void Optimizer::setIsOptimized(bool value) {
     is_optimized = value;
 }
 
-int Optimizer::callTargetFunc(){
+float Optimizer::callTargetFunc(){
     if(_cb_targetFunc) {
         try {
-            int res = luabind::call_function<int>(_cb_targetFunc);
+            float res = luabind::call_function<float>(_cb_targetFunc);
             return res;
         } catch(const std::exception& e){
             //FIXME: Call this function from viewer, or else on error the stack would go nuts
@@ -59,5 +59,5 @@ int Optimizer::callTargetFunc(){
         }
     }
     //TODO: Throw an error
-    return INT_MAX;
+    return INFINITY;
 }

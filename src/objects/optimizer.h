@@ -16,7 +16,7 @@ public:
     static void luaBind(lua_State *s);
 
     void setTargetFunc(const luabind::object &fn);
-    int callTargetFunc();
+    float callTargetFunc();
     int getValue();
     void setValue(int value);
     bool isOptimized();

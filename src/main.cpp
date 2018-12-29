@@ -3,7 +3,7 @@
 #define APP_NAME_FULL tr("Bullet Physics Playground")
 #define APP_ORGANIZATION QString("bullet-physics-playground.github.io")
 
-#include <limits.h>
+#include <math.h>
 
 #include <QApplication>
 
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
         }
 
 
-       int best_target_func_value = INT_MAX;
+       float best_target_func_value = INFINITY;
        int best_optimized_value = 0;
 
         /* TODO: make this section less hack-y:
@@ -176,18 +176,18 @@ int main(int argc, char **argv) {
             // Currently setting the iteration number to be the guessed value
             // TODO: I think this implementation only works when we optimize speed/forces, not positions / size / etc.
 
-            int best_target_func_value_for_this_iteration = INT_MAX;
+            float best_target_func_value_for_this_iteration = INFINITY;
             int frame = 0;
 
             for (int j = 0; j < n; ++j) {
                 v->animate();
-                int res = v->getOptimizer()->callTargetFunc();
+                float res = v->getOptimizer()->callTargetFunc();
                 if (res < best_target_func_value_for_this_iteration) {
                     best_target_func_value_for_this_iteration = res;
                     frame = j;
                 }
             }
-            printf("For value %d, the best contender for target func is %d from frame %d\n", i, best_target_func_value_for_this_iteration, frame);
+            printf("For value %d, the best contender for target func is %.6f from frame %d\n", i, best_target_func_value_for_this_iteration, frame);
             
             if (best_target_func_value_for_this_iteration < best_target_func_value) {
                 best_target_func_value = best_target_func_value_for_this_iteration;
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
             v->close();
        }
 
-       printf("The final target func value we got was %d, and we achieved it with the value %d\n", best_target_func_value, best_optimized_value);
+       printf("The final target func value we got was %.6f, and we achieved it with the value %d\n", best_target_func_value, best_optimized_value);
 
         // Run the simulation again, for rendering the successful value
         Viewer *v = new Viewer(NULL, settings);
