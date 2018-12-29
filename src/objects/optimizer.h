@@ -19,10 +19,13 @@ public:
     int callTargetFunc();
     int getValue();
     void setValue(int value);
+    bool isOptimized();
+    void setIsOptimized(bool value);
 
 protected:
     luabind::object _cb_targetFunc;
     int optimization_value;
+    bool is_optimized;
 };
 
 #endif // OPTIMIZER_H

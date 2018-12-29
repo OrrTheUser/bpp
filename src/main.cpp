@@ -199,6 +199,47 @@ int main(int argc, char **argv) {
 
        printf("The final target func value we got was %d, and we achieved it with the value %d\n", best_target_func_value, best_optimized_value);
 
+        // Run the simulation again, for rendering the successful value
+        Viewer *v = new Viewer(NULL, settings);
+
+        QObject::connect(v, &Viewer::scriptHasOutput, [=](QString o) {
+            qStdOut() << o << endl;
+        });
+        QObject::connect(v, &Viewer::statusEvent, [=](QString e) {
+            qStdErr() << e << endl;
+        });
+
+        if (parser.isSet("verbose"))  {
+            QObject::connect(v, &Viewer::scriptStarts, [=]() {
+                qStdErr() << "scriptStarts()" << endl;
+            });
+            QObject::connect(v, &Viewer::scriptStopped, [=]() {
+                qStdErr() << "scriptStoppend()" << endl;
+            });
+            QObject::connect(v, &Viewer::scriptFinished, [=]() {
+                qStdErr() << "scriptFinished()" << endl;
+            });
+        }
+
+        if (!lua.isEmpty()) {
+            v->setScriptName(withoutExtension(lua[0]));
+        } else {
+            v->setScriptName("stdin");
+        }
+
+        v->setSavePOV(parser.isSet("export"));
+
+        v->getOptimizer()->setValue(best_optimized_value);
+        v->getOptimizer()->setIsOptimized(true);
+        v->parse(txt);
+        v->startSim();
+
+        for (int j = 0; j < n; ++j) {
+            v->animate();
+        }
+       
+        v->close();
+
         QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
 
         return app->exec();

@@ -4,7 +4,8 @@
 #include <luabind/adopt_policy.hpp>
 
 Optimizer::Optimizer() : QObject() {
-    // Left blank intentionally.
+    optimization_value = 0;
+    is_optimized = false;
 }
 
 Optimizer::~Optimizer() {
@@ -22,6 +23,7 @@ void Optimizer::luaBind(lua_State *s) {
             .def(constructor<>())
             .def("targetFunc", (void(Optimizer::*)(const luabind::object &fn))&Optimizer::setTargetFunc, adopt(luabind::result))
             .property("value", &Optimizer::getValue)
+            .property("is_optimized", &Optimizer::isOptimized)
             ];
 }
 int Optimizer::getValue() {
@@ -36,6 +38,14 @@ void Optimizer::setTargetFunc(const luabind::object &fn) {
     if(luabind::type(fn) == LUA_TFUNCTION) {
         _cb_targetFunc = fn;
     }
+}
+
+bool Optimizer::isOptimized() {
+    return is_optimized;
+}
+
+void Optimizer::setIsOptimized(bool value) {
+    is_optimized = value;
 }
 
 int Optimizer::callTargetFunc(){
