@@ -15,10 +15,10 @@ public:
 
     static void luaBind(lua_State *s);
 
-    void optimize(const luabind::object &fn);
     void setTargetFunc(const luabind::object &fn);
-    void callTargetFunc();
+    int callTargetFunc();
     int getValue();
+    void setValue(int value);
 
 protected:
     luabind::object _cb_targetFunc;

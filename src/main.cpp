@@ -3,6 +3,8 @@
 #define APP_NAME_FULL tr("Bullet Physics Playground")
 #define APP_ORGANIZATION QString("bullet-physics-playground.github.io")
 
+#include <limits.h>
+
 #include <QApplication>
 
 #include <QCommandLineParser>
@@ -130,43 +132,72 @@ int main(int argc, char **argv) {
             return EXIT_FAILURE;
         }
 
-        Viewer *v = new Viewer(NULL, settings);
 
-        QObject::connect(v, &Viewer::scriptHasOutput, [=](QString o) {
-            qStdOut() << o << endl;
-        });
-        QObject::connect(v, &Viewer::statusEvent, [=](QString e) {
-            qStdErr() << e << endl;
-        });
+       int best_target_func_value = INT_MAX;
+       int best_optimized_value = 0;
 
-        if (parser.isSet("verbose"))  {
-            QObject::connect(v, &Viewer::scriptStarts, [=]() {
-                qStdErr() << "scriptStarts()" << endl;
+        /* TODO: make this section less hack-y:
+        maybe parse a command line argument "optimize" and only run this part when it's on, etc.
+        */
+       for(int i = 0; i < 30; i++) {
+            Viewer *v = new Viewer(NULL, settings);
+
+            QObject::connect(v, &Viewer::scriptHasOutput, [=](QString o) {
+                qStdOut() << o << endl;
             });
-            QObject::connect(v, &Viewer::scriptStopped, [=]() {
-                qStdErr() << "scriptStoppend()" << endl;
+            QObject::connect(v, &Viewer::statusEvent, [=](QString e) {
+                qStdErr() << e << endl;
             });
-            QObject::connect(v, &Viewer::scriptFinished, [=]() {
-                qStdErr() << "scriptFinished()" << endl;
-            });
-        }
 
-        if (!lua.isEmpty()) {
-            v->setScriptName(withoutExtension(lua[0]));
-        } else {
-            v->setScriptName("stdin");
-        }
+            if (parser.isSet("verbose"))  {
+                QObject::connect(v, &Viewer::scriptStarts, [=]() {
+                    qStdErr() << "scriptStarts()" << endl;
+                });
+                QObject::connect(v, &Viewer::scriptStopped, [=]() {
+                    qStdErr() << "scriptStoppend()" << endl;
+                });
+                QObject::connect(v, &Viewer::scriptFinished, [=]() {
+                    qStdErr() << "scriptFinished()" << endl;
+                });
+            }
 
-        v->setSavePOV(parser.isSet("export"));
+            if (!lua.isEmpty()) {
+                v->setScriptName(withoutExtension(lua[0]));
+            } else {
+                v->setScriptName("stdin");
+            }
 
-        v->parse(txt);
-        v->startSim();
+            v->setSavePOV(parser.isSet("export"));
 
-        for (int i = 0; i < n; ++i) {
-            v->animate();
-        }
+            v->getOptimizer()->setValue(i);
+            v->parse(txt);
+            v->startSim();
 
-        v->close();
+            // Currently setting the iteration number to be the guessed value
+            // TODO: I think this implementation only works when we optimize speed/forces, not positions / size / etc.
+
+            int best_target_func_value_for_this_iteration = INT_MAX;
+            int frame = 0;
+
+            for (int j = 0; j < n; ++j) {
+                v->animate();
+                int res = v->getOptimizer()->callTargetFunc();
+                if (res < best_target_func_value_for_this_iteration) {
+                    best_target_func_value_for_this_iteration = res;
+                    frame = j;
+                }
+            }
+            printf("For value %d, the best contender for target func is %d from frame %d\n", i, best_target_func_value_for_this_iteration, frame);
+            
+            if (best_target_func_value_for_this_iteration < best_target_func_value) {
+                best_target_func_value = best_target_func_value_for_this_iteration;
+                best_optimized_value = i;
+            }
+
+            v->close();
+       }
+
+       printf("The final target func value we got was %d, and we achieved it with the value %d\n", best_target_func_value, best_optimized_value);
 
         QMetaObject::invokeMethod(qApp, "quit", Qt::QueuedConnection);
 

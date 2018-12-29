@@ -47,3 +47,5 @@ bpp.pro.user
 .qmake.stash
 scene.pov
 bpp.*
+!bpp.pro
+.qglviewer*

@@ -12,30 +12,37 @@
 
 require "module/povray"
 
-function set_scene()
-  p = Plane(0,1,0,0,10)
-  p.pos = btVector3(0,-0.5,0)
-  p.col = "#777"
-  p.restitution = 1
-  p.sdl = [[
-    texture {
-      pigment{ color White }
-      finish { ambient 0.45 diffuse 0.85 }
-    }
-    rotate<0,0,0>
-    no_shadow
-  ]]
-  v:add(p) --print(p.pov)
-  
-  s = Sphere(1,1)
-  s.pos = btVector3(0,10,0)
-  
-  --Optimizer value here:
-  s.vel = btVector3(v.optimizer.value,0,0)
-  s.col = "red"
-  s.restitution = 0.925
-  v:add(s) --print(s.pov)
-end
+p = Plane(0,1,0,0,10)
+p.pos = btVector3(0,-0.5,0)
+p.col = "#777"
+p.restitution = 1
+p.sdl = [[
+texture {
+  pigment{ color White }
+  finish { ambient 0.45 diffuse 0.85 }
+}
+rotate<0,0,0>
+no_shadow
+]]
+v:add(p) --print(p.pov)
+
+s = Sphere(1,1)
+s.pos = btVector3(10,10,0)
+
+--Optimizer value here:
+s.vel = btVector3(-v.optimizer.value,0,0)
+s.col = "red"
+s.restitution = 0.925
+v:add(s) --print(s.pov)
+
+t = Sphere(1,1)
+t.pos = btVector3(2,0.5,0)
+
+--Optimizer value here:
+t.col = "blue"
+t.restitution = 0.925
+v:add(t) --print(s.pov)
+
 
 function setcam()
   v.cam:setUpVector(btVector3(0,1,0), false)
@@ -48,24 +55,21 @@ end
 setcam()
 
 r = 0
-v:postSim(function(N) print(N)
+v:postSim(function(N)
   setcam()
   if (render) then
-    if (N % 50 == 0) then
-      povray.render("-d +L/usr/share/bpp/includes +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
+    if (N % 5 == 0) then
+      --povray.render("-d +L/usr/share/bpp/includes +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r + 10 * v.optimizer.value)
       r = r + 1
     end
   end
 end)
 
-number_of_iterations = 0
+-- Minimizing the distance from (0,0,0)
 v.optimizer:targetFunc(function()
-  number_of_iterations = number_of_iterations + 1
-  print("Sphere's x value: " .. s.pos.x)
-  -- TODO: Why won't s.pos.length() work?
-  d = s.pos:length()
-  d2 = math.sqrt(s.pos.x^2 + s.pos.y^2 + s.pos.z^2)
-  print("a", d, "b", d2)
+  print(s.pos)
+  print(t.pos)
+  d = s.pos:distance(t.pos)
   return math.floor(d)
 end)
-v.optimizer:optimize(set_scene)
+
