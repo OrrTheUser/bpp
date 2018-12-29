@@ -448,7 +448,6 @@ Viewer::Viewer(QWidget *parent, QSettings *settings, bool savePOV) : QGLViewer(p
     loadPrefs();
 
     setCamera(new Cam(this));
-    setOptimizer(new Optimizer());
 
     // POV-Ray properties
     mPreSDL = "";

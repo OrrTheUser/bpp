@@ -3,9 +3,20 @@
 #include <math.h>
 #include <luabind/adopt_policy.hpp>
 
-Optimizer::Optimizer() : QObject() {
-    optimization_value = 0;
-    is_optimized = false;
+Optimizer::Optimizer(
+    std::vector<int> optimization_values
+) : QObject() {
+    // Initialize all the static values if the vector is empty
+    // because that means they are uninitialized
+    if (Optimizer::optimization == std::vector<int>()) {
+	Optimizer::optimization = optimization_values;
+	Optimizer::optimization_index = 0;
+	Optimizer::best_index = 0;
+	Optimizer::best_value = INFINITY;
+    }
+    else if (optimization_values != Optimizer::optimization_values) {
+    	// TODO: this is bad, throw?
+    }
 }
 
 Optimizer::~Optimizer() {
@@ -26,26 +37,11 @@ void Optimizer::luaBind(lua_State *s) {
             .property("is_optimized", &Optimizer::isOptimized)
             ];
 }
-int Optimizer::getValue() {
-    return optimization_value;
-}
-
-void Optimizer::setValue(int value) {
-    optimization_value = value;
-}
 
 void Optimizer::setTargetFunc(const luabind::object &fn) {
     if(luabind::type(fn) == LUA_TFUNCTION) {
         _cb_targetFunc = fn;
     }
-}
-
-bool Optimizer::isOptimized() {
-    return is_optimized;
-}
-
-void Optimizer::setIsOptimized(bool value) {
-    is_optimized = value;
 }
 
 float Optimizer::callTargetFunc(){
@@ -60,4 +56,20 @@ float Optimizer::callTargetFunc(){
     }
     //TODO: Throw an error
     return INFINITY;
+}
+
+int getOptimizationValue() {
+    return Optimizer::optimization_values[Optimizer::optimization_index]; 
+}
+
+int Optimizer::advanceOptimizationValue() {
+    Optimizer::optimization_index += 1;
+}
+
+bool Optimizer::hasNextValue() {
+    return Optimizer::optimization_index + 1 < Optimizer::optimization_values.size();
+}
+
+float getBestValue() {
+    return Optimizer::best_value;
 }
