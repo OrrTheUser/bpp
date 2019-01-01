@@ -216,7 +216,7 @@ private:
     QString lua_error;
 
     Cam *_cam;
-    Optimizer *_opt;
+    Optimizer* _opt;
     Vec _initialCameraPosition;
     Quaternion _initialCameraOrientation;
 

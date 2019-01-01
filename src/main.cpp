@@ -33,12 +33,10 @@ Viewer* run_simulation(
     const QCommandLineParser& parser,
     const QString& txt,
     const QStringList& lua,
-    Optimizer& optimizer,
-    int optimization_value,
-    bool optimized
+    Optimizer& optimizer
 ) {
     Viewer *v = new Viewer(NULL, settings);
-    v.setOptimizer(optimizer);
+    v->setOptimizer(&optimizer);
     QObject::connect(v, &Viewer::scriptHasOutput, [=](QString o) {
 	qStdOut() << o << endl;
     });
@@ -66,10 +64,6 @@ Viewer* run_simulation(
 
     v->setSavePOV(parser.isSet("export"));
 
-    v->getOptimizer()->setValue(optimization_value);
-    if (optimized) {
-	v->getOptimizer()->setIsOptimized(true);
-    }
     v->parse(txt);
     v->startSim();
     return v;
@@ -187,43 +181,29 @@ int main(int argc, char **argv) {
         }
 
 
-        float best_target_func_value = INFINITY;
-        int best_optimized_value = 0;
-	Optimizer optimizer = new Optimizer();
+	Optimizer optimizer;
 
          /* TODO: make this section less hack-y:
          maybe parse a command line argument "optimize" and only run this part when it's on, etc.
          */
-        for(int i = 0; i < 30; i++) {
-             Viewer* v = run_simulation(settings, parser, txt, lua, optimizer, i, false);
-             // Currently setting the iteration number to be the guessed value
-             // TODO: I think this implementation only works when we optimize speed/forces, not positions / size / etc.
+        while (optimizer.hasNextOptimizationValue()) {
+            Viewer* v = run_simulation(settings, parser, txt, lua, optimizer);
+            // Currently setting the iteration number to be the guessed value
+            // TODO: I think this implementation only works when we optimize speed/forces, not positions / size / etc.
 
-             float best_target_func_value_for_this_iteration = INFINITY;
-             int frame = 0;
-
-             for (int j = 0; j < n; ++j) {
-                 v->animate();
-                 float res = v->getOptimizer()->callTargetFunc();
-                 if (res < best_target_func_value_for_this_iteration) {
-                     best_target_func_value_for_this_iteration = res;
-                     frame = j;
-                 }
-             }
-             printf("For value %d, the best contender for target func is %.6f from frame %d\n", i, best_target_func_value_for_this_iteration, frame);
-             
-             if (best_target_func_value_for_this_iteration < best_target_func_value) {
-                 best_target_func_value = best_target_func_value_for_this_iteration;
-                 best_optimized_value = i;
-             }
-
-             v->close();
+            for (int j = 0; j < n; ++j) {
+                v->animate();
+                optimizer.callTargetFunction();
+            }
+            //printf("For value %d, the best contender for target func is %.6f from frame %d\n", i, best_target_func_value_for_this_iteration, frame);             
+	    optimizer.advanceOptimizationValue();
+            v->close();
         }
 
-        printf("The final target func value we got was %.6f, and we achieved it with the value %d\n", best_target_func_value, best_optimized_value);
+        //printf("The final target func value we got was %.6f, and we achieved it with the value %d\n", best_target_func_value, best_optimized_value);
 
         // Run the simulation again, for rendering the successful value
-	Viewer* v = run_simulation(settings, parser, txt, lua, optimizer, best_optimized_value, true);
+	Viewer* v = run_simulation(settings, parser, txt, lua, optimizer);
         for (int j = 0; j < n; ++j) {
             v->animate();
         }

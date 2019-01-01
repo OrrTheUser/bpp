@@ -471,7 +471,7 @@ Cam* Viewer::getCamera() {
     return _cam;
 }
 
-void Viewer::setOptimizer(Optimizer *opt) {
+void Viewer::setOptimizer(Optimizer* opt) {
     _opt = opt;
 }
 

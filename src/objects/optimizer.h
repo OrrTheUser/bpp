@@ -11,25 +11,27 @@ class Optimizer : public QObject {
     Q_OBJECT;
 
 public:
-    Optimizer(std::vector<int> optimization_values);
+    Optimizer();
     ~Optimizer();
 
     static void luaBind(lua_State *s);
 
-    void setTargetFunc(const luabind::object &fn);
-    float callTargetFunc();
+    void setOptimizationValues(std::vector<int> optimization_values);
+    void setTargetFunction(const luabind::object &fn);
+    void callTargetFunction();
     int getOptimizationValue();
     void advanceOptimizationValue();
-    bool hasNextValue();
-    float getBestValue();
+    bool hasNextOptimizationValue();
+    int getBestOptimizationValue();
+    float getBestTargetValue();
 
 protected:
     luabind::object _cb_targetFunc;
-    static std::vector<int> optimization_values;
+    std::vector<int> optimization_values;
     // TODO: change this to an iterator?
-    static int optimization_index;
-    static int best_index;
-    static float best_value;
+    int optimization_index;
+    int best_optimization_value;
+    float best_target_value;
 };
 
 #endif // OPTIMIZER_H
