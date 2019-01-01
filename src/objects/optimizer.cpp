@@ -1,11 +1,9 @@
 #include "optimizer.h"
 
 #include <math.h>
-#include <luabind/adopt_policy.hpp>
 
 Optimizer::Optimizer() : QObject() {
     // TODO: initialization list?
-    optimization_index = 0;
     best_optimization_value = 0;
     best_target_value = INFINITY;
 }
@@ -29,14 +27,18 @@ void Optimizer::luaBind(lua_State *s) {
             ];
 }
 
-void Optimizer::setOptimizationValues(std::vector<int> optimization_values) {
+void Optimizer::addOptimizationValues(
+    const luabind::object& name, 
+    const luabind::object& min_value, 
+    const luabind::object& max_value, 
+    const luabind::object& step 
+) {
+    // #TODO: set default step to 1?
     // #TODO: ORR - you are welcome to add a type check "for good practice"
-    if (this->optimization_values == std::vector<int>()) {
-	this->optimization_values = optimization_values;
-    }
-    else if (this->optimization_values != optimization_values) {
-    	// TODO: this is bad, throw?
-    }
+    if (self.optimization_values.find(name) == self.optimization_values.end()) {
+	self.optimization_values[name] = std::tuple(min_value, max_value, step);
+	self.current_optimization_values[name] = min_value;
+    }	    
 }
 
 void Optimizer::setTargetFunction(const luabind::object &fn) {
@@ -71,11 +73,37 @@ int Optimizer::getOptimizationValue() {
 }
 
 void Optimizer::advanceOptimizationValue() {
-    optimization_index += 1;
+    for (
+	auto it = self.current_optimization_values.begin();
+	it != self.current_optimization_values.end();
+	it++
+    ) {
+	range = self.optimization_value[it->first];
+	min_value = std::get<0>(range);
+	max_value = std::get<1>(range);
+	step = std::get<2>(range);
+	if (it->second + step <= max_value) {
+	    it->second += step;
+	    return;
+	}
+	it->second = min_value;
+    }
 }
 
 bool Optimizer::hasNextOptimizationValue() {
-    return optimization_index + 1 < optimization_values.size();
+    for (
+	auto it = self.current_optimization_values.begin();
+	it != self.current_optimization_values.end();
+	it++
+    ) {
+	range = self.optimization_value[it->first];
+	end = std::get<1>(range);
+	step = std::get<2>(range);
+	if (it->second + step <= end) {
+	    return true;
+	}
+    }
+    return false;
 }
 
 int Optimizer::getBestOptimizationValue() {
