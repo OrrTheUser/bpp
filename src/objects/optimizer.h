@@ -1,6 +1,8 @@
 #ifndef OPTIMIZER_H
 #define OPTIMIZER_H
 
+#include <map>
+#include <tuple>
 #include <lua.hpp>
 #include <luabind/luabind.hpp>
 
@@ -15,17 +17,21 @@ public:
 
     static void luaBind(lua_State *s);
 
-    void setTargetFunc(const luabind::object &fn);
-    float callTargetFunc();
-    int getValue();
-    void setValue(int value);
-    bool isOptimized();
-    void setIsOptimized(bool value);
+    void setOptimizationValues(const luabind::object &fn);
+    void setTargetFunction(const luabind::object &fn);
+    void callTargetFunction();
+    int getOptimizationValue();
+    void advanceOptimizationValue();
+    bool hasNextOptimizationValue();
+    int getBestOptimizationValue();
+    float getBestTargetValue();
 
 protected:
     luabind::object _cb_targetFunc;
-    int optimization_value;
-    bool is_optimized;
+    std::map<std::string, std::tuple<int, int, int>> optimization_values;
+    std::map<std::string, int> current_optimization_values;
+    int best_optimization_value;
+    float best_target_value;
 };
 
 #endif // OPTIMIZER_H

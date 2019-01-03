@@ -13,7 +13,7 @@
 require "module/povray"
 
 p = Plane(0,1,0,0,10)
-p.pos = btVector3(0,-0.5,0)
+p.pos = btVector3(0,0,0)
 p.col = "#777"
 p.restitution = 1
 p.sdl = [[
@@ -26,22 +26,26 @@ no_shadow
 ]]
 v:add(p) --print(p.pov)
 
-s = Sphere(1,1)
-s.pos = btVector3(10,10,0)
+ball = Sphere(1,1)
+ball.pos = btVector3(10,10,0)
 
 --Optimizer value here:
-s.vel = btVector3(-v.optimizer.value,0,0)
-s.col = "red"
-s.restitution = 0.925
-v:add(s) --print(s.pov)
+ball.vel = btVector3(v.optimizer.value,0,0)
+ball.col = "red"
+ball.restitution = 0.925
+v:add(ball) --print(ball.pov)
 
-t = Sphere(1,1)
-t.pos = btVector3(2,0.5,0)
+target_width = 5
+target_height = 0.2
+target_depth = 5
+target_mass = 100
+target = Cube(target_width, target_height, target_depth, target_mass)
+target.pos = btVector3(20,target_height/2,0)
 
 --Optimizer value here:
-t.col = "blue"
-t.restitution = 0.925
-v:add(t) --print(s.pov)
+target.col = "blue"
+target.restitution = 0.925
+v:add(target) --print(target.pov)
 
 
 function setcam()
@@ -58,7 +62,7 @@ r = 0
 v:postSim(function(N)
   setcam()
   if (render) then
-    if (N % 1 == 0) then
+    if (N % 15 == 0) then
 	  if (v.optimizer.is_optimized) then
 	    povray.render("-d +L/usr/share/bpp/includes +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
 	    r = r + 1
@@ -67,11 +71,11 @@ v:postSim(function(N)
   end
 end)
 
--- Minimizing the distance from (0,0,0)
+-- Minimizing the distance between our ball and its target
 v.optimizer:targetFunc(function()
-  print(s.pos)
-  print(t.pos)
-  d = s.pos:distance(t.pos)
+  print(ball.pos)
+  print(target.pos)
+  d = ball.pos:distance(target.pos)
   return d
 end)
 
