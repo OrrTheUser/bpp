@@ -48,6 +48,7 @@ void Optimizer::addOptimizationValues(
 	current_optimization_values[name] = min_value;
 	best_optimization_values[name] = min_value;
     }
+    //TODO: What do these lines do?
     int f = std::get<0>(optimization_values[name]);
     int s = std::get<1>(optimization_values[name]);
     int t = std::get<2>(optimization_values[name]);
