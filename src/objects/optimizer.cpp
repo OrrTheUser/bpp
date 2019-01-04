@@ -25,6 +25,7 @@ void Optimizer::luaBind(lua_State *s) {
             .def("addOptimizationValues", &Optimizer::addOptimizationValues)
             .def("setTargetFunction", &Optimizer::setTargetFunction)
             .def("getOptimizationValue", &Optimizer::getOptimizationValue)
+	    .property("is_optimized", &Optimizer::isOptimized)
             ];
 }
 
@@ -120,19 +121,21 @@ bool Optimizer::hasNextOptimizationValue() {
 	auto range = optimization_values[it->first];
 	int end = std::get<1>(range);
 	int step = std::get<2>(range);
-	std::cout << "At " << it->first << " we got " << it->second << " when the end is at " << end << " when walking in steps of " << step << std::endl;
 	if (it->second + step <= end) {
-    	    std::cout << "Returned True from function" << std::endl;
 	    return true;
 	}
     }
-    std::cout << "Returned False and ended function" << std::endl;
-    return false;
+    return !initialized;
 }
 
 int Optimizer::getBestOptimizationValue(std::string name) {
     return best_optimization_values[name];
 }
+
 float Optimizer::getBestTargetValue() {
     return best_target_value;
+}
+
+bool Optimizer::isOptimized() {
+    return !hasNextOptimizationValue();
 }

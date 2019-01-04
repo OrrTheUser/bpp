@@ -31,6 +31,7 @@ public:
     bool hasNextOptimizationValue();
     int getBestOptimizationValue(std::string name);
     float getBestTargetValue();
+    bool isOptimized();
 
 protected:
     luabind::object _cb_targetFunc;
