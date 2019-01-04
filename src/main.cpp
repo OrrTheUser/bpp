@@ -195,12 +195,10 @@ int main(int argc, char **argv) {
                 v->animate();
                 optimizer.callTargetFunction();
             }
-            //printf("For value %d, the best contender for target func is %.6f from frame %d\n", i, best_target_func_value_for_this_iteration, frame);             
 	    optimizer.advanceOptimizationValue();
             v->close();
         }
 
-        //printf("The final target func value we got was %.6f, and we achieved it with the value %d\n", best_target_func_value, best_optimized_value);
 
         // Run the simulation again, for rendering the successful value
 	Viewer* v = run_simulation(settings, parser, txt, lua, optimizer);

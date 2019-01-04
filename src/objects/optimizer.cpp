@@ -51,7 +51,6 @@ void Optimizer::addOptimizationValues(
     int f = std::get<0>(optimization_values[name]);
     int s = std::get<1>(optimization_values[name]);
     int t = std::get<2>(optimization_values[name]);
-    std::cout << name << f << s << t << std::endl; 
 }
 
 void Optimizer::setTargetFunction(const luabind::object &fn) {
@@ -112,7 +111,6 @@ void Optimizer::advanceOptimizationValue() {
 }
 
 bool Optimizer::hasNextOptimizationValue() {
-    std::cout << "Started function" << std::endl;
     for (
 	auto it = current_optimization_values.begin();
 	it != current_optimization_values.end();
