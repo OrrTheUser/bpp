@@ -38,6 +38,7 @@ protected:
     std::map<std::string, int> current_optimization_values;
     std::map<std::string, int> best_optimization_values;
     float best_target_value;
+    bool initialized;
 };
 
 #endif // OPTIMIZER_H

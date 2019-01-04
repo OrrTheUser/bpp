@@ -6,6 +6,7 @@
 Optimizer::Optimizer() : QObject() {
     // TODO: initialization list?
     best_target_value = INFINITY;
+    initialized = false;
 }
 
 Optimizer::~Optimizer() {
@@ -33,8 +34,11 @@ void Optimizer::addOptimizationValues(
     const luabind::object& max_value_object, 
     const luabind::object& step_object 
 ) {
-    // #TODO: set default step to 1?
-    // #TODO: ORR - you are welcome to add a type check "for good practice"
+    // TODO: set default step to 1?
+    // TODO: ORR - you are welcome to add a type check "for good practice"
+    // TODO: We need this initialize because hasNextOptimizationValue is run before
+    // the optimization_values are first set but it prevents a user from not optimizing by default.
+    initialized = true;
     int min_value = luabind::object_cast<int>(min_value_object);
     int max_value = luabind::object_cast<int>(max_value_object);
     int step = luabind::object_cast<int>(step_object);
