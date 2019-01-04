@@ -18,19 +18,25 @@ public:
     static void luaBind(lua_State *s);
 
     void setOptimizationValues(const luabind::object &fn);
+    void addOptimizationValues(
+	const std::string name,
+        const luabind::object& min_value_object,
+	const luabind::object& max_value_object,
+        const luabind::object& step_object
+    );
     void setTargetFunction(const luabind::object &fn);
     void callTargetFunction();
-    int getOptimizationValue();
+    int getOptimizationValue(std::string name);
     void advanceOptimizationValue();
     bool hasNextOptimizationValue();
-    int getBestOptimizationValue();
+    int getBestOptimizationValue(std::string name);
     float getBestTargetValue();
 
 protected:
     luabind::object _cb_targetFunc;
     std::map<std::string, std::tuple<int, int, int>> optimization_values;
     std::map<std::string, int> current_optimization_values;
-    int best_optimization_value;
+    std::map<std::string, int> best_optimization_values;
     float best_target_value;
 };
 

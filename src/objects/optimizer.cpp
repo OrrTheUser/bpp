@@ -1,10 +1,10 @@
 #include "optimizer.h"
 
+#include <iostream>
 #include <math.h>
 
 Optimizer::Optimizer() : QObject() {
     // TODO: initialization list?
-    best_optimization_value = 0;
     best_target_value = INFINITY;
 }
 
@@ -21,24 +21,32 @@ void Optimizer::luaBind(lua_State *s) {
             [
             class_<Optimizer>("Optimizer")
             .def(constructor<>())
-            .def("setOptimizationValues", &Optimizer::setOptimizationValues)
+            .def("addOptimizationValues", &Optimizer::addOptimizationValues)
             .def("setTargetFunction", &Optimizer::setTargetFunction)
-            .property("optimization_value", &Optimizer::getOptimizationValue)
+            .def("getOptimizationValue", &Optimizer::getOptimizationValue)
             ];
 }
 
 void Optimizer::addOptimizationValues(
-    const luabind::object& name, 
-    const luabind::object& min_value, 
-    const luabind::object& max_value, 
-    const luabind::object& step 
+    const std::string name, 
+    const luabind::object& min_value_object, 
+    const luabind::object& max_value_object, 
+    const luabind::object& step_object 
 ) {
     // #TODO: set default step to 1?
     // #TODO: ORR - you are welcome to add a type check "for good practice"
-    if (self.optimization_values.find(name) == self.optimization_values.end()) {
-	self.optimization_values[name] = std::tuple(min_value, max_value, step);
-	self.current_optimization_values[name] = min_value;
-    }	    
+    int min_value = luabind::object_cast<int>(min_value_object);
+    int max_value = luabind::object_cast<int>(max_value_object);
+    int step = luabind::object_cast<int>(step_object);
+    if (optimization_values.find(name) == optimization_values.end()) {
+	optimization_values[name] = std::make_tuple(min_value, max_value, step);
+	current_optimization_values[name] = min_value;
+	best_optimization_values[name] = min_value;
+    }
+    int f = std::get<0>(optimization_values[name]);
+    int s = std::get<1>(optimization_values[name]);
+    int t = std::get<2>(optimization_values[name]);
+    std::cout << name << f << s << t << std::endl; 
 }
 
 void Optimizer::setTargetFunction(const luabind::object &fn) {
@@ -55,7 +63,13 @@ void Optimizer::callTargetFunction(){
             float res = luabind::call_function<float>(_cb_targetFunc);
             if (best_target_value > res) {
 		best_target_value = res;
-		best_optimization_value = getOptimizationValue();
+		for (
+		    auto it = current_optimization_values.begin();
+		    it != current_optimization_values.end();
+		    it++
+		) {
+		    best_optimization_values[it->first] = it->second;
+		}
 	    }
         } catch(const std::exception& e){
             //FIXME: Call this function from viewer, or else on error the stack would go nuts
@@ -65,23 +79,25 @@ void Optimizer::callTargetFunction(){
     //TODO: Throw an error
 }
 
-int Optimizer::getOptimizationValue() {
+int Optimizer::getOptimizationValue(std::string name) {
     if (hasNextOptimizationValue()) {
-	return optimization_values[optimization_index]; 
+	return current_optimization_values[name]; 
     }
-    return getBestOptimizationValue();
+    return getBestOptimizationValue(name);
 }
+
+
 
 void Optimizer::advanceOptimizationValue() {
     for (
-	auto it = self.current_optimization_values.begin();
-	it != self.current_optimization_values.end();
+	auto it = current_optimization_values.begin();
+	it != current_optimization_values.end();
 	it++
     ) {
-	range = self.optimization_value[it->first];
-	min_value = std::get<0>(range);
-	max_value = std::get<1>(range);
-	step = std::get<2>(range);
+	auto range = optimization_values[it->first];
+	int min_value = std::get<0>(range);
+	int max_value = std::get<1>(range);
+	int step = std::get<2>(range);
 	if (it->second + step <= max_value) {
 	    it->second += step;
 	    return;
@@ -91,23 +107,27 @@ void Optimizer::advanceOptimizationValue() {
 }
 
 bool Optimizer::hasNextOptimizationValue() {
+    std::cout << "Started function" << std::endl;
     for (
-	auto it = self.current_optimization_values.begin();
-	it != self.current_optimization_values.end();
+	auto it = current_optimization_values.begin();
+	it != current_optimization_values.end();
 	it++
     ) {
-	range = self.optimization_value[it->first];
-	end = std::get<1>(range);
-	step = std::get<2>(range);
+	auto range = optimization_values[it->first];
+	int end = std::get<1>(range);
+	int step = std::get<2>(range);
+	std::cout << "At " << it->first << " we got " << it->second << " when the end is at " << end << " when walking in steps of " << step << std::endl;
 	if (it->second + step <= end) {
+    	    std::cout << "Returned True from function" << std::endl;
 	    return true;
 	}
     }
+    std::cout << "Returned False and ended function" << std::endl;
     return false;
 }
 
-int Optimizer::getBestOptimizationValue() {
-    return best_optimization_value;
+int Optimizer::getBestOptimizationValue(std::string name) {
+    return best_optimization_values[name];
 }
 float Optimizer::getBestTargetValue() {
     return best_target_value;
