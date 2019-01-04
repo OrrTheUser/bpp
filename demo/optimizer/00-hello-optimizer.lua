@@ -26,11 +26,14 @@ no_shadow
 ]]
 v:add(p) --print(p.pov)
 
+v.optimizer:addOptimizationValues("first", 3, 12, 1)
+v.optimizer:addOptimizationValues("second", -5, 7, 1)
+
 ball = Sphere(1,1)
-ball.pos = btVector3(10,10,0)
+ball.pos = btVector3(10,10,v.optimizer:getOptimizationValue("second"))
 
 --Optimizer value here:
-ball.vel = btVector3(v.optimizer.value,0,0)
+ball.vel = btVector3(v.optimizer:getOptimizationValue("first"),0,0)
 ball.col = "red"
 ball.restitution = 0.925
 v:add(ball) --print(ball.pov)
@@ -62,8 +65,10 @@ r = 0
 v:postSim(function(N)
   setcam()
   if (render) then
-    if (N % 15 == 0) then
+    if (N % 20 == 0) then
 	  if (v.optimizer.is_optimized) then
+	    print(v.optimizer:getOptimizationValue("first"))
+	    print(v.optimizer:getOptimizationValue("second"))
 	    povray.render("-d +L/usr/share/bpp/includes +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
 	    r = r + 1
 	  end
@@ -72,10 +77,9 @@ v:postSim(function(N)
 end)
 
 -- Minimizing the distance between our ball and its target
-v.optimizer:targetFunc(function()
-  print(ball.pos)
-  print(target.pos)
-  d = ball.pos:distance(target.pos)
-  return d
+v.optimizer:setTargetFunction(function()
+  --print(ball.pos)
+  --print(target.pos)
+  return ball.pos:distance(target.pos)
 end)
 
