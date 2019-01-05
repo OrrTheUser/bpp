@@ -26,6 +26,13 @@ no_shadow
 ]]
 v:add(p) --print(p.pov)
 
+cup = OpenSCAD([===[
+difference() {
+cylinder(160,60,60);
+translate([0,0,15])cylinder(160,50,50);    
+}
+]===], 1)
+
 die_1 = OpenSCAD([===[
 module dodecahedron(height) {
     intersection() {
@@ -292,16 +299,14 @@ module icosatext(height) {
 //------------------------------------------
 
 difference() {
-	difference() {
-		intersection() {
-			cube([16, 16, 16], center = true);
-			rotate([125, 0, 45])
-			octahedron(26);
-		}
-		cubetext(16);
+	intersection() {
+		cube([16, 16, 16], center = true);
+		rotate([125, 0, 45])
+		octahedron(26);
 	}
-	cube([8, 8, 8], center = true);
-}   
+	cubetext(16);
+}
+
 ]===], 1)
 
 die_2 = OpenSCAD([===[
@@ -570,15 +575,12 @@ module icosatext(height) {
 //------------------------------------------
 
 difference() {
-	difference() {
-		intersection() {
-		dodecahedron(22);
-		rotate([35, 10, -18])
-			icosahedron(26.8);
-		}
-		dodecatext(22);
+	intersection() {
+	dodecahedron(22);
+	rotate([35, 10, -18])
+		icosahedron(26.8);
 	}
-	dodecahedron(14);
+	dodecatext(22);
 }
 ]===], 1)
 
@@ -848,69 +850,46 @@ module icosatext(height) {
 //------------------------------------------
 
 difference() {
-	difference() {
-		intersection() {
-		octahedron(18);
-		rotate([45, 35, -30])
-			cube([29, 29, 29], center = true);
-		}
-		octatext(18);
+	intersection() {
+	octahedron(18);
+	rotate([45, 35, -30])
+		cube([29, 29, 29], center = true);
 	}
-	octahedron(10);
+	octatext(18);
 }
 ]===], 1)
 
 
 die_1.col = "red"
 die_1.restitution = 0.2
-die_1.pos = btVector3(0,0,8)
+die_1.pos = btVector3(0,100,50)
+die_1.mass = 100
 v:add(die_1)
-
-m_1 = Sphere(2,2)
-m_1.col = "red"
-m_1.pos = btVector3(0,0,11)
-v:add(m_1)
-
-die_1_point = btVector3(0,0,1)
-m_1_point = btVector3(0,0,4)
-constr = btPoint2PointConstraint(
-die_1.body, m_1.body,
-die_1_point, m_1_point)
---v:addConstraint(constr)
 
 die_2.col = "blue"
 die_2.restitution = 0.2
-die_2.pos = btVector3(30,0,11)
+die_2.pos = btVector3(30,100,51)
+die_2.mass = 100
 v:add(die_2)
-
-m_2 = Sphere(2,2)
-m_2.col = "blue"
-m_2.pos = btVector3(30,0,17)
-v:add(m_2)
-
-die_2_point = btVector3(0,0,1)
-m_2_point = btVector3(0,0,7)
-constr = btPoint2PointConstraint(
-die_2.body, m_2.body,
-die_2_point, m_2_point)
---v:addConstraint(constr)
 
 die_3.col = "green"
 die_3.restitution = 0.2
-die_3.pos = btVector3(-30,0,9)
+die_3.pos = btVector3(-30,100,50)
+die_3.mass = 100
 v:add(die_3)
 
-m_3 = Sphere(2,2)
-m_3.col = "green"
-m_3.pos = btVector3(-30,0,13)
-v:add(m_3)
+cup.col = "brown"
+cup.restitution = 0.2
+cup.pos = btVector3(0,80,0)
+cup.mass = 3000
+t = cup.trans
+a = btVector3(1,0,0)
+r = btQuaternion(a, -0.4)
+t:setRotation(r)
+cup.trans = t
+cup_orig_pos = cup.pos
 
-die_3_point = btVector3(0,0,1)
-m_3_point = btVector3(0,0,5)
-constr = btPoint2PointConstraint(
-die_3.body, m_3.body,
-die_3_point, m_3_point)
---v:addConstraint(constr)
+v:add(cup)
 
 function setcam()
   v.cam:setUpVector(btVector3(0,1,0), false)
@@ -920,13 +899,29 @@ function setcam()
   v.cam.look = btVector3(15,4,0)
 end
 
-setcam()
+--setcam()
+
+forward_vel = btVector3(0,7,80)
+backwards_vel = btVector3(0,7,-50)
+v:preSim(function(N)
+  print(N)
+  if (N < 60) then
+    cup.pos = cup_orig_pos
+  end
+  if (N == 60) then
+    cup.vel = forward_vel
+  end
+  if (N == 100) then
+    cup.vel = backwards_vel
+  end
+end)
+
 
 r = 0
 v:postSim(function(N)
-  setcam()
+  --setcam()
   if (render) then
-    if (N % 1 == 0) then
+    if (N % 100 == 0) then
 	  if (v.optimizer.is_optimized) then
 	    povray.render("-d +L/usr/share/bpp/includes +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
 	    r = r + 1
