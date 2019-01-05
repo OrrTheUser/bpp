@@ -891,9 +891,6 @@ cup_orig_pos = cup.pos
 
 v:add(cup)
 
-v.optimizer:addOptimizationValues("forward", 118, 160, 1)
-v.optimizer:addOptimizationValues("backwards", 100, 160, 1)
-
 die_1_target = 1000
 die_2_target = 1000
 die_3_target = 1000
@@ -901,7 +898,7 @@ die_3_target = 1000
 function target_func()  
   max_face_orig_orientation = btVector3(0, 0, -1)
   min_face_orig_orientation = btVector3(0, 0, 1)
-  wanted_face = min_face_orig_orientation
+  wanted_face = max_face_orig_orientation
   
   -- die 1
   curr_rot = die_1.trans:getRotation()
@@ -930,8 +927,6 @@ function target_func()
   return die_1_target + die_2_target + die_3_target
 end
 
-v.optimizer:setTargetFunction(target_func)
-
 function setcam_on_1()
   v.cam:setUpVector(btVector3(0,1,0), false)
   v.cam:setHorizontalFieldOfView(0.4)
@@ -956,12 +951,18 @@ function setcam_on_3()
   v.cam.look = die_3.pos
 end
 
+function setcam()
+  v.cam:setUpVector(btVector3(0,1,0), false)
+  v.cam:setHorizontalFieldOfView(0.4)
+  d = -1000
+  v.cam.pos  = btVector3(2000, 500, 1000)
+  v.cam.look = btVector3(0, 80, 200)
+end
 
+setcam()
 
---setcam()
-
-forward_vel = btVector3(0,7,v.optimizer:getOptimizationValue("forward") / 2)
-backwards_vel = btVector3(0,7,-v.optimizer:getOptimizationValue("backwards") / 2)
+forward_vel = btVector3(0,7,123 / 2)
+backwards_vel = btVector3(0,7,-102 / 2)
 
 v:preSim(function(N)
   if (N < 60) then
@@ -979,15 +980,17 @@ end)
 r = 0
 v:postSim(function(N)
 
-  if(N == 0) then
-	if (v.optimizer.is_optimized) then
-		print("Optimized value")
-	end
-	print("--")
-	print(v.optimizer:getOptimizationValue("forward"))
-	print(v.optimizer:getOptimizationValue("backwards"))
+  print(v.cam.pos)
+
+  if (N == 0) then
+    setcam()
+	--povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
   end
-  
+
+  if (N % 50 == 0) then
+    print(N)
+  end
+
   if (N == 1950) then
     print("Target function values:")
     print(target_func())
@@ -995,17 +998,15 @@ v:postSim(function(N)
 	print(die_2_target)
 	print(die_3_target)
 	
-	if (v.optimizer.is_optimized) then
-	  setcam_on_1()
-	  povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
-	  r = r + 1
-	  setcam_on_2()
-	  povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
-	  r = r + 1
-	  setcam_on_3()
-	  povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
-	  r = r + 1
-	end
+	setcam_on_1()
+	--povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
+	r = r + 1
+	setcam_on_2()
+	--povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
+	r = r + 1
+	setcam_on_3()
+	povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
+	r = r + 1
   end
 end)
 
