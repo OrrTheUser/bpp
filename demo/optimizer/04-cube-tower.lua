@@ -29,7 +29,7 @@ target_height = 0.2
 target_depth = 5
 target_mass = 100
 target = Cube(target_width, target_height, target_depth, target_mass)
-target.pos = btVector3(30,target_height/2,0)
+target.pos = btVector3(50,target_height/2,0)
 v:add(target)
 
 cube_width = 5
@@ -49,13 +49,13 @@ v:add(cube1)
 v:add(cube2)
 v:add(cube3)
 
-v.optimizer:addOptimizationValues("x_speed", 1, 30, 1)
-v.optimizer:addOptimizationValues("y_speed", 0, 25, 1)
-v.optimizer:addOptimizationValues("x_location", -20, 10, 5)
---v.optimizer:addOptimizationValues("y_location", 20, 50, 5)
+v.optimizer:addOptimizationValues("x_speed", 1, 30, 10)
+v.optimizer:addOptimizationValues("y_speed", 0, 25, 10)
+v.optimizer:addOptimizationValues("x_location", -21, 10, 10)
+v.optimizer:addOptimizationValues("y_location", 21, 50, 10)
 
 s1 = Sphere(2.75,1.5)
-s1.pos = btVector3(v.optimizer:getOptimizationValue("x_location"), 30, 0)
+s1.pos = btVector3(v.optimizer:getOptimizationValue("x_location"), v.optimizer:getOptimizationValue("y_location"), 0)
 s1.col = "#0000ff"
 s1.vel = btVector3(v.optimizer:getOptimizationValue("x_speed"), v.optimizer:getOptimizationValue("y_speed"), 0)
 s1.friction=.3
@@ -72,7 +72,7 @@ end
 
 v.optimizer:setTargetFunction(function()
   -- Just hit
-  d = target.pos:distance(cube3.pos)
+  d = target.pos:distance(cube1.pos)
   -- Hit fast (need to check this)
   -- d = g.pos:distance(objective.pos) + (1 / (g.vel:length()))
   return d
@@ -84,13 +84,15 @@ v:postSim(function(N)
 	if (v.optimizer.is_optimized) then
 		print("Optimized value")
 	end
-	--print("--")
-	--print(v.optimizer:getOptimizationValue("first"))
-	--print(v.optimizer:getOptimizationValue("second"))
+	print("--")
+	print(v.optimizer:getOptimizationValue("x_speed"))
+	print(v.optimizer:getOptimizationValue("y_speed"))
+	print(v.optimizer:getOptimizationValue("x_location"))
+	print(v.optimizer:getOptimizationValue("y_location"))
   end
   
   if (render) then
-    if (N % 50 == 0) then
+    if (N % 15 == 0) then
 	  if (v.optimizer.is_optimized) then
 	    setcam()
 	    povray.render("-d +L/usr/share/bpp/includes +Lincludes -p +W320 +H240", "/tmp", "00-tower", r)
