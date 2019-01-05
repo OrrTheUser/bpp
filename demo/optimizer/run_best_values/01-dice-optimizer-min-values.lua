@@ -976,37 +976,23 @@ v:preSim(function(N)
   end
 end)
 
-
 r = 0
 v:postSim(function(N)
 
-  print(v.cam.pos)
-
-  if (N == 0) then
-    setcam()
-	--povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
-  end
-
-  if (N % 50 == 0) then
+  if (N % 2 == 0 and (N > 40)) then
     print(N)
-  end
-
-  if (N == 1950) then
-    print("Target function values:")
-    print(target_func())
-	print(die_1_target)
-	print(die_2_target)
-	print(die_3_target)
-	
+	setcam()
+	povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W640 +H480", "/mnt/hgfs/Checkouts/bpp/export/min", "min-faces", r)
 	setcam_on_1()
-	--povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
-	r = r + 1
+	povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W640 +H480", "/mnt/hgfs/Checkouts/bpp/export/min", "min-faces", 10000 + r)
 	setcam_on_2()
-	--povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
-	r = r + 1
+	povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W640 +H480", "/mnt/hgfs/Checkouts/bpp/export/min", "min-faces", 20000 + r)
 	setcam_on_3()
-	povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W320 +H240", "/tmp", "00-hello-pov", r)
+	povray.render("-d +L/usr/share/bpp/includes +L/home/orr/.cache/bpp +Lincludes -p +W640 +H480", "/mnt/hgfs/Checkouts/bpp/export/min", "min-faces", 30000 + r)
 	r = r + 1
+  end
+  if (N == 1496) then
+	os.execute("kill `pidof bpp`")
   end
 end)
 
